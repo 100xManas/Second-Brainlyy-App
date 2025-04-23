@@ -28,9 +28,7 @@ const tagSchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true }
 })
 
-const userModel = mongoose.model("User", userSchema)
-const noteModel = mongoose.model("Note", noteSchema)
-const linkModel = mongoose.model("Link", linkSchema)
-const tagModel = mongoose.model("Tag", tagSchema)
-
-export default { userModel, noteModel, linkModel, tagModel };
+export const userModel = mongoose.model("User", userSchema)
+export const noteModel = mongoose.model("Note", noteSchema)
+export const linkModel = mongoose.model("Link", linkSchema)
+export const tagModel = mongoose.model("Tag", tagSchema)
