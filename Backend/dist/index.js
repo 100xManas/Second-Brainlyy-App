@@ -20,7 +20,7 @@ const db_1 = require("./db");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 // Sign up
-app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/api/v1/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const signupRequiredBody = zod_1.default.object({
             firstName: zod_1.default.string(),
@@ -30,19 +30,21 @@ app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
         const decodedData = signupRequiredBody.safeParse(req.body);
         if (!decodedData.success) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: "Invalid input",
                 error: decodedData.error.errors
             });
+            return;
         }
         const { firstName, lastName, email, password } = decodedData.data;
         const existingUser = yield db_1.userModel.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({
+            res.status(409).json({
                 success: false,
                 message: "User already exists."
             });
+            return;
         }
         const hash = yield bcrypt_1.default.hash(password, 12);
         yield db_1.userModel.create({

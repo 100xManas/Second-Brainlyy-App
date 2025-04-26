@@ -1,14 +1,17 @@
-import express, { Request, Response } from "express"
+import express from "express"
 import mongoose from "mongoose"
 import z from "zod"
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken"
+import dotenv from "dotenv"
 import { userModel } from "./db"
 
+dotenv.config()
 const app = express()
 app.use(express.json())
 
 // Sign up
-app.post('api/v1/signup', async (req, res ) => {
+app.post('/api/v1/signup', async (req, res) => {
     try {
         const signupRequiredBody = z.object({
             firstName: z.string(),
@@ -20,7 +23,7 @@ app.post('api/v1/signup', async (req, res ) => {
         const decodedData = signupRequiredBody.safeParse(req.body);
 
         if (!decodedData.success) {
-             res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: "Invalid input",
                 error: decodedData.error.errors
@@ -34,10 +37,11 @@ app.post('api/v1/signup', async (req, res ) => {
         const existingUser = await userModel.findOne({ email });
 
         if (existingUser) {
-             res.status(409).json({
+            res.status(409).json({
                 success: false,
                 message: "User already exists."
             });
+
             return
         }
 
@@ -61,9 +65,61 @@ app.post('api/v1/signup', async (req, res ) => {
 });
 
 // Sign in
-app.post('/signin', (req, res) => {
+app.post('/api/v1/signin', async (req, res) => {
+    try {
+        const signinRequiredBody = z.object({
+            email: z.string().email(),
+            password: z.string().min(6)
+        });
 
-})
+        const decodedData = signinRequiredBody.safeParse(req.body);
+        
+        // Check if parsing was successful
+        if (!decodedData.success) {
+             res.status(400).json({
+                success: false,
+                message: "Invalid input data"
+            });
+            return
+        }
+
+        const { email, password } = decodedData.data;
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+             res.status(401).json({
+                success: false,
+                message: "Invalid credentials."
+            });
+            return
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+
+        if (match) {
+            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string);
+
+            res.cookie("token", token).status(200).json({
+                success: true,
+                message: "User sign in successful."
+            });
+        } else {
+             res.status(401).json({
+                success: false,
+                message: "Invalid credentials."
+            });
+            return
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+});
 
 // Add new content
 app.post('/content', (req, res) => {
