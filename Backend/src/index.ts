@@ -4,7 +4,7 @@ import z from "zod"
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
-import { userModel } from "./db"
+import { userModel, noteModel } from "./db"
 
 dotenv.config()
 const app = express()
@@ -73,10 +73,10 @@ app.post('/api/v1/signin', async (req, res) => {
         });
 
         const decodedData = signinRequiredBody.safeParse(req.body);
-        
+
         // Check if parsing was successful
         if (!decodedData.success) {
-             res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: "Invalid input data"
             });
@@ -88,7 +88,7 @@ app.post('/api/v1/signin', async (req, res) => {
         const user = await userModel.findOne({ email });
 
         if (!user) {
-             res.status(401).json({
+            res.status(401).json({
                 success: false,
                 message: "Invalid credentials."
             });
@@ -105,7 +105,7 @@ app.post('/api/v1/signin', async (req, res) => {
                 message: "User sign in successful."
             });
         } else {
-             res.status(401).json({
+            res.status(401).json({
                 success: false,
                 message: "Invalid credentials."
             });
@@ -122,9 +122,55 @@ app.post('/api/v1/signin', async (req, res) => {
 });
 
 // Add new content
-app.post('/content', (req, res) => {
+app.post('api/v1/content', async (req, res) => {
+    try {
+        const contentRequiredBody = z.object({
+            title: z.string(),
+            content: z.string(),
+            link: z.string(),
+            imageUrl: z.string(),
+            type: z.enum(['tweet', 'image', 'video', 'article', 'docs', 'link']),
+            tags: z.array(z.string()),
+            userId: z.string(),
+        });
 
-})
+        const decodedData = contentRequiredBody.safeParse(req.body);
+
+        // Check if validation failed
+        if (!decodedData.success) {
+            res.status(400).json({
+                success: false,
+                message: "Validation failed",
+                errors: decodedData.error.errors
+            });
+            return
+        }
+
+        const { title, content, link, imageUrl, type, tags, userId } = decodedData.data;
+
+        const newContent = await noteModel.create({
+            title,
+            content,
+            link,
+            imageUrl,
+            type,
+            tags,
+            userId
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "New note created successfully.",
+            newContent
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+});
 
 // Fetching all existing documents
 app.get('/contents', (req, res) => {
