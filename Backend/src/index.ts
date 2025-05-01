@@ -235,7 +235,7 @@ app.post('/api/v1/brain/share/:contentId', async (req, res) => {
             {
                 isPublic: true,
                 shareId
-            }, 
+            },
             { new: true })
 
         if (!updatedNote) {
@@ -261,8 +261,32 @@ app.post('/api/v1/brain/share/:contentId', async (req, res) => {
 })
 
 // Fetch another user's shared brain content
-app.get('/api/v1/brain/:shareLink', (req, res) => {
+app.get('/api/v1/brain/:shareId', async (req, res) => {
+    try {
+        const { shareId } = req.params;
 
+        const note = await noteModel.findOne({ shareId, isPublic: true })
+
+        if (!note) {
+            res.status(404).json({
+                success: false,
+                message: "Note not found"
+            })
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Note found successfully",
+            note
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
 })
 
 
