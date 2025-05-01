@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import { userModel, noteModel } from "./db"
+import { v4 as uuidv4 } from "uuid"
 
 dotenv.config()
 const app = express()
@@ -223,12 +224,44 @@ app.delete('/api/v1/content/:contentId', async (req, res) => {
 })
 
 // Create a shareable link for your second brain
-app.post('/brain/share', (req, res) => {
+app.post('/api/v1/brain/share/:contentId', async (req, res) => {
+    try {
+        const { contentId } = req.params
 
+        const shareId = uuidv4();
+
+        const updatedNote = await noteModel.findByIdAndUpdate(
+            contentId,
+            {
+                isPublic: true,
+                shareId
+            }, 
+            { new: true })
+
+        if (!updatedNote) {
+            res.status(401).json({
+                success: false,
+                message: "Note not found"
+            })
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Shareable link created.",
+            shareableLink: `http://localhost:5173/share/${shareId}`
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
 })
 
 // Fetch another user's shared brain content
-app.get('brain/:shareLink', (req, res) => {
+app.get('/api/v1/brain/:shareLink', (req, res) => {
 
 })
 

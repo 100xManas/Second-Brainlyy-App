@@ -16,6 +16,8 @@ const noteSchema = new mongoose.Schema({
     type: { type: String, enum: ['tweet', 'image', 'video', 'article', "docs", "link"], required: true },
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag", }],
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    isPublic: { type: Boolean, default: false },
+    shareId: { type: String, unique: true, sparse:true }
 }, { timestamps: true })
 
 const linkSchema = new mongoose.Schema({
