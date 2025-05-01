@@ -173,8 +173,22 @@ app.post('api/v1/content', async (req, res) => {
 });
 
 // Fetching all existing documents
-app.get('/contents', (req, res) => {
+app.get('/api/v1/contents', async (req, res) => {
+    try {
+        const notes = await noteModel.find({})
 
+        res.status(200).json({
+            success: true,
+            message: "Retrived successfully",
+            notes
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
 })
 
 // Delete a document
