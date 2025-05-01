@@ -192,8 +192,34 @@ app.get('/api/v1/contents', async (req, res) => {
 })
 
 // Delete a document
-app.delete('/content', (req, res) => {
+app.delete('/api/v1/content/:contentId', async (req, res) => {
+    try {
+        const { contentId } = req.params
 
+        const content = await noteModel.deleteOne({ _id: contentId })
+
+        if (!content) {
+            res.status(404).json({
+                success: false,
+                message: "Content not found."
+            });
+
+            return
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "deleted successfully.",
+            content
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
 })
 
 // Create a shareable link for your second brain
