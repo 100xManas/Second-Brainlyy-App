@@ -24,7 +24,7 @@ function Sidebar() {
     ]
 
     return (
-        <div className="h-screen w-64 bg-red-200">
+        <div className="h-full w-full bg-red-200">
             <div className='flex items-center w-full justify-center gap-1 border-b py-2'>
                 <div className='h-14 w-14'>
                     <img src={Logo} alt="Logo" className='h-full w-full drop-shadow-2xl object-cover' />
