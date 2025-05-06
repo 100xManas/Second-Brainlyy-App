@@ -1,4 +1,5 @@
 import Heading from "./components/Heading"
+import Hero from "./components/Hero"
 import Sidebar from "./components/Navbar"
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         </div>
         <main className="h-screen w-[80vw]">
           <Heading />
+          <Hero />
         </main>
       </div>
     </>
